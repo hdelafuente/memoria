@@ -131,3 +131,6 @@ dmypy.json
 *.csv
 chromedriver
 data/
+
+.vscode
+.DS_Store
