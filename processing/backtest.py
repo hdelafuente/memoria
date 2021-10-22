@@ -4,17 +4,16 @@ import pprint as pp
 
 def get_backtest_results(trades: dict, name="", starting_balance=1000):
     """
-    trades: dict
-    {
-      'id',
-      'open_price',
-      'open_date',
-      'coin_amount',
-      'close_price',
-      'close_date',
+    returns :trades: dict
+    params:
+      'id'
+      'open_rate'
+      'open_date'
+      'amount'
+      'close_rate'
+      'close_date'
       'after_balance'
 
-    }
     """
     avg_profit = 0
     max_profit = 0
@@ -24,10 +23,16 @@ def get_backtest_results(trades: dict, name="", starting_balance=1000):
     wins = 0
     losses = 0
     prev_balance = 0
+    sell_reasons = {
+      "stop_loss": 0,
+      "sell_signal": 0
+    }
     print("Processing backtest results...")
     final_balance = trades[-1]["after_balance"]
     total_profit = final_balance - starting_balance
     for trade in tqdm(trades):
+
+        sell_reasons[trade["sell_reason"]] += 1
         if prev_balance == 0:
             profit = (trade["after_balance"] - starting_balance) / starting_balance
         else:
@@ -66,4 +71,6 @@ def get_backtest_results(trades: dict, name="", starting_balance=1000):
     print(f"avg profit: {avg_profit:3.5} %")
     print(f"max profit: {max_profit:3.2f} %")
     print(f"min profit: {min_profit:3.2f} %")
+
+    print(sell_reasons)
     return True

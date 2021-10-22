@@ -64,7 +64,7 @@ def cointelegraph(pages, target):
         delay_ms = random.random()
         time.sleep(
             delay_s + delay_ms
-        )  # No se si reduce el riesgo de baneo IP...
+        )  # No se si reduce el riesgo de baneo IP
         next_page = driver.find_element_by_class_name("posts-listing__more-btn")
         driver.execute_script("arguments[0].click();", next_page)
 
@@ -90,5 +90,6 @@ if __name__ == "__main__":
     df.set_index("date")
     df.sort_values(by="date")
     output_file = open("test.csv", "w")
+    df.drop_duplicates()
     df.to_csv(path_or_buf=output_file, index=False, sep="|")
     output_file.close()
