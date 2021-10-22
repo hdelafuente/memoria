@@ -55,7 +55,7 @@ def group_news(test: pd.DataFrame) -> dict:
 
 
 def build_dataframe(test: pd.DataFrame, ticker: str) -> pd.DataFrame:
-    # Ticker price hisotry extraction
+    # Extraccion de data historica
     start_date = test.iloc[0].date
     end_date = test.iloc[-1].date
     print(f"Starting Date: {start_date} \nEnding Date: {end_date}")
@@ -96,7 +96,7 @@ def build_dataframe(test: pd.DataFrame, ticker: str) -> pd.DataFrame:
     df["change_24hrs"] = df.apply(
         lambda x: (x["Close"] * 100.0 / x["Open"] - 100.0), axis=1
     )
-    # Cut the dataframe to get the past year only
+    # Cortamos el dataframe para obtener el ultimo año
     print("Filtering dates...")
     return_start_date = "2020-12-31"
     after_start_date = df.index >= return_start_date

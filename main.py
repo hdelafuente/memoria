@@ -11,32 +11,25 @@ from processing.data import load_and_estimate, build_dataframe
 # Visualization
 from visualization.utils import plot_results
 
-# Configurations
-# TODO: decouple
-WRITE_CSV = False
-PLOT_NEWS = False
-PLOT_BACKTEST = True
-TICKER = "BTC-USD"
+# Configuracion
+from decouple import config
 
 
-def export_csv(file_name: str, dataframe: DataFrame):
-    # Write the dataframe into a csv file
-    print(f"Exporting results into: {file_name}")
-    output_file = open(file_name, "w")
-    dataframe.to_csv(path_or_buf=output_file, index=True, sep="|")
-    output_file.close()
-    print("Successful export!")
+PLOT_NEWS = config("PLOT_NEWS", default=False)
+PLOT_BACKTEST = config("PLOT_BACKTEST", default=False)
+TICKER = config("TICKER", default="BTC-USD")
+
 
 
 if __name__ == "__main__":
     test = load_and_estimate("test.csv")
     btc, matrix = build_dataframe(test, TICKER)
 
-    base_strategy_trades = base_strategy(btc)
-    get_backtest_results(base_strategy_trades, name="Base Strategy")
+    starting_balance = config("INIT_BALANCE")
+    stake_amount = config("STAKE_AMOUNT")
 
-    if WRITE_CSV:
-        export_csv("BTC-USD-polarity.csv", btc)
+    base_strategy_trades = base_strategy(btc, stake_amount=stake_amount, starting_balance=starting_balance)
+    get_backtest_results(base_strategy_trades, name="Base Strategy")
 
     if PLOT_NEWS:
         plot_results(btc)

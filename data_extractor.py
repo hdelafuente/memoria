@@ -59,12 +59,12 @@ def cointelegraph(pages, target):
     for page in range(pages):
         print("Clicking on page: ", page)
 
-        # Random delay for preventing ip ban
+        # Agregamos un delay random
         delay_s = random.randint(1, 5)
         delay_ms = random.random()
         time.sleep(
             delay_s + delay_ms
-        )  # Don't know if it works for reducing ip ban risk
+        )  # No se si reduce el riesgo de baneo IP...
         next_page = driver.find_element_by_class_name("posts-listing__more-btn")
         driver.execute_script("arguments[0].click();", next_page)
 

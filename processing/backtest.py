@@ -53,12 +53,15 @@ def get_backtest_results(trades: dict, name="", starting_balance=1000):
             min_balance = prev_balance
 
     avg_profit /= len(trades)
+
+    final_profit = final_balance / starting_balance - 1
     print(f"----------- {name} backtest results -----------")
     print(f"starting balance: $ {starting_balance:3.2f}")
     print(f"final balance: $ {final_balance:3.2f}")
     print(f"max balance: $ {max_balance:3.2f}")
     print(f"min balance: $ {min_balance:3.2f}")
     print(f"total profit: $ {total_profit:3.2f}")
+    print(f"profit: {100 * final_profit:3.2f} %")
     print(f"wins/losses: {wins}/{losses}")
     print(f"avg profit: {avg_profit:3.5} %")
     print(f"max profit: {max_profit:3.2f} %")
