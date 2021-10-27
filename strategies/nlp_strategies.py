@@ -32,7 +32,7 @@ def register_close_trade(trade: dict, open_rate: float, close_rate: float, amoun
 # Base strategy
 def base_strategy(df: DataFrame, stake_amount=1000.0, starting_balance=1000.0, stop_loss=0.05) -> dict:
     """
-    En orden las columnas:
+    En orden las columnas del dataframe:
       High, Low, Open, Close, Volume, Adj Close, very_bullish,
       very_bearish, bullish, bearish, neutral, change_24hrs
     
