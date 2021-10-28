@@ -96,11 +96,5 @@ def build_dataframe(test: pd.DataFrame, ticker: str) -> pd.DataFrame:
     df["change_24hrs"] = df.apply(
         lambda x: (x["Close"] * 100.0 / x["Open"] - 100.0), axis=1
     )
-    # Cortamos el dataframe para obtener el ultimo año
-    # print("Filtering dates...")
-    # return_start_date = "2020-12-31"
-    # after_start_date = df.index >= return_start_date
-    # filtered_dates = df.loc[after_start_date]
-    # print("Dataframe generated!")
     corr_matrix = df.corr("pearson")
     return df, corr_matrix
