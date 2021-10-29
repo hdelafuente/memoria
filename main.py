@@ -3,16 +3,14 @@ import warnings
 warnings.filterwarnings("ignore")
 import logging
 
-# Processing
+# Procesamiento
 from strategies.nlp_strategies import base_strategy, wighted_base_strategy
 from strategies.ta_strategies import macd_rsi_strategy
 from processing.backtest import get_backtest_results
 from processing.data import load_and_estimate, build_dataframe
 from processing.optimizing import optimize_macd_rsi_strategy
 
-import pandas as pd
-
-# Visualization
+# Visualizacion
 from visualization.utils import plot_results
 
 # Configuracion
@@ -82,6 +80,7 @@ if __name__ == "__main__":
     print("MACD + RSI (optimized) strategy result")
     print(f"Final balance: $ {balance3:3.2f}")
     print(f"Total Profit: {(balance3 * 100 / starting_balance):3.2f} %")
+    print("==============================")
 
     if PLOT_NEWS:
         plot_results(btc)
