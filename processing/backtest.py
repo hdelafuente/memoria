@@ -23,10 +23,7 @@ def get_backtest_results(trades: dict, name="", starting_balance=1000):
     wins = 0
     losses = 0
     prev_balance = 0
-    sell_reasons = {
-      "stop_loss": 0,
-      "sell_signal": 0
-    }
+    sell_reasons = {"stop_loss": 0, "sell_signal": 0}
     print("Processing backtest results...")
     final_balance = trades[-1]["after_balance"]
     total_profit = final_balance - starting_balance

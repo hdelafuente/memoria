@@ -1,6 +1,7 @@
 import warnings
 
 warnings.filterwarnings("ignore")
+import logging
 from pathlib import Path
 import os
 from tqdm import tqdm
@@ -8,6 +9,8 @@ import pandas as pd
 from textblob import TextBlob
 import pandas_datareader as pdr
 
+
+logger = logging.getLogger(__name__)
 data_path = Path("data")
 if not data_path.exists():
     data_path.mkdir(parents=True)
@@ -32,7 +35,7 @@ def load_and_estimate(file_name: str) -> pd.DataFrame:
 
 
 def group_news(test: pd.DataFrame) -> dict:
-    print("Grouping news by polarity...")
+    logger.info("Grouping news by polarity...")
     temp = dict()
     indexes = test.index
     for row in tqdm(test.values):
@@ -56,13 +59,14 @@ def group_news(test: pd.DataFrame) -> dict:
 
 def build_dataframe(test: pd.DataFrame, ticker: str) -> pd.DataFrame:
     # Extraccion de data historica
+    logger.info(f"Generating dataframe for: {ticker}")
     start_date = test.iloc[0].date
     end_date = test.iloc[-1].date
-    print(f"Starting Date: {start_date} \nEnding Date: {end_date}")
+    logger.debug(f"Starting Date: {start_date} \nEnding Date: {end_date}")
+
     df = pdr.DataReader(ticker, "yahoo", start_date, end_date)
     results = group_news(test)
-    print(f"Generating dataframe for: {ticker}")
-    print("Mapping grouped news by date...")
+
     df["n_very_bullish"] = df.apply(
         lambda x: results[x.name.date().strftime("%Y-%m-%d")][0]
         if x.name.date().strftime("%Y-%m-%d") in results.keys()
