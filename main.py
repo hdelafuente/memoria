@@ -4,15 +4,16 @@ warnings.filterwarnings("ignore")
 import logging
 
 # Processing
-from pandas import DataFrame
 from strategies.nlp_strategies import base_strategy, wighted_base_strategy
 from strategies.ta_strategies import macd_rsi_strategy
 from processing.backtest import get_backtest_results
 from processing.data import load_and_estimate, build_dataframe
+from processing.optimizing import optimize_macd_rsi_strategy
+
+import pandas as pd
 
 # Visualization
 from visualization.utils import plot_results
-import pprint as pp
 
 # Configuracion
 from decouple import config
@@ -38,7 +39,7 @@ if __name__ == "__main__":
     logger.info("Backtest configurations")
     logger.info(f"Starting balance: $ {starting_balance:3.2f}")
     logger.info(f"Stake amount: $ {stake_amount:3.2f}")
-    logger.info(f"Stop loss: {stop_loss} %")
+    logger.info(f"Stop loss: {stop_loss*100:3.2f} %")
     logger.info("Starting backtests...")
 
     base_strategy_trades, balance = base_strategy(
@@ -53,11 +54,18 @@ if __name__ == "__main__":
         starting_balance=starting_balance,
         stop_loss=stop_loss,
     )
-    macd_trades, balance3 = macd_rsi_strategy(
+
+    fast_period, slowpreiod, signalperiod = optimize_macd_rsi_strategy(
+        btc, stake_amount, starting_balance, stop_loss
+    )
+    macd_rsi_strategy_trades, balance3 = macd_rsi_strategy(
         btc,
-        stake_amount=stake_amount,
-        starting_balance=starting_balance,
-        stop_loss=stop_loss,
+        stake_amount,
+        starting_balance,
+        stop_loss,
+        fast_period,
+        slowpreiod,
+        signalperiod,
     )
 
     print("==============================")
@@ -71,9 +79,9 @@ if __name__ == "__main__":
     print(f"Total Profit: {(balance2 * 100 / starting_balance):3.2f} %")
 
     print("==============================")
-    print("MACD + RSI strategy result")
+    print("MACD + RSI (optimized) strategy result")
     print(f"Final balance: $ {balance3:3.2f}")
     print(f"Total Profit: {(balance3 * 100 / starting_balance):3.2f} %")
-    print("==============================")
+
     if PLOT_NEWS:
         plot_results(btc)

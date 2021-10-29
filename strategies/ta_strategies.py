@@ -12,14 +12,14 @@ logger = logging.getLogger(__name__)
 
 def macd_rsi_strategy(
     df: DataFrame,
-    stake_amount=1000.0,
-    starting_balance=1000.0,
+    stake_amount=7000.0,
+    starting_balance=10000.0,
     stop_loss=0.05,
     macd_fastperiod=12,
     macd_slowperiod=26,
     macd_signalperiod=9,
     rsi_timeperiod=12,
-):
+) -> dict():
     macd, signal, hist = talib.MACD(
         df["Close"],
         fastperiod=macd_fastperiod,
@@ -52,6 +52,7 @@ def macd_rsi_strategy(
                 current_trade["profit"] = (
                     current_trade["close_rate"] - current_trade["open_rate"]
                 ) * current_trade["amount"]
+                current_trade["sell_reason"] = "sell_signal"
                 trades.append(current_trade)
                 open_trade = False
                 current_trade = dict()
@@ -63,6 +64,7 @@ def macd_rsi_strategy(
                 current_trade["profit"] = (
                     current_trade["close_rate"] - current_trade["open_rate"]
                 ) * current_trade["amount"]
+                current_trade["sell_reason"] = "stop_loss"
                 trades.append(current_trade)
                 open_trade = False
                 current_trade = dict()

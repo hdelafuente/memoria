@@ -62,7 +62,7 @@ def build_dataframe(test: pd.DataFrame, ticker: str) -> pd.DataFrame:
     logger.info(f"Generating dataframe for: {ticker}")
     start_date = test.iloc[0].date
     end_date = test.iloc[-1].date
-    logger.debug(f"Starting Date: {start_date} \nEnding Date: {end_date}")
+    logger.info(f"Starting Date: {start_date} | Ending Date: {end_date}")
 
     df = pdr.DataReader(ticker, "yahoo", start_date, end_date)
     results = group_news(test)

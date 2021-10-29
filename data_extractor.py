@@ -1,3 +1,4 @@
+import os
 import csv
 import json
 import requests
@@ -7,7 +8,11 @@ import pandas as pd
 import time
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
+from pathlib import Path
 
+data_path = Path("data")
+if not data_path.exists():
+    data_path.mkdir(parents=True)
 
 # Total pages: 3
 def coinmarketcap(pages, target):
@@ -30,11 +35,11 @@ def coinmarketcap(pages, target):
     return 0
 
 
-# Total pages: 39
+# Total pages: 40
 def blockcrypto(pages, target):
     print("Started Blockcrypto extraction")
     session = requests.Session()
-    for page in range(pages):
+    for page in range(1, pages):
         print("Extracting page: ", page)
         r = requests.get(
             "https://www.theblockcrypto.com/wp-json/v1/posts/?post_type=&page="
@@ -71,7 +76,6 @@ def cointelegraph(pages, target):
     for title, date in zip(titles, dates):
         target["title"].append(title.get_attribute("innerHTML"))
         target["date"].append(date.get_attribute("datetime"))
-        print(date.get_attribute("datetime"))
 
     driver.close()
     return 0
@@ -80,14 +84,24 @@ def cointelegraph(pages, target):
 if __name__ == "__main__":
     data_dict = {"title": [], "date": []}
     coinmarketcap(3, data_dict)  # año-mes-dia
-    blockcrypto(39, data_dict)  # año-mes-dia
-    cointelegraph(125, data_dict)  # año-mes-dia
+    blockcrypto(40, data_dict)  # año-mes-dia
+    cointelegraph(250, data_dict)  # año-mes-dia
     print("Extracted:  " + str(len(data_dict["title"])) + " titles")
     print("Extracted:  " + str(len(data_dict["date"])) + " dates")
+
+    test = pd.read_csv(
+        os.path.join(data_path, "test.csv"),
+        sep="|",
+        parse_dates=["date"],
+        date_parser=lambda col: pd.to_datetime(col, utc=True),
+        infer_datetime_format=True,
+    )
+
     df = pd.DataFrame(data_dict)
-    df.set_index("date")
-    df.sort_values(by="date")
-    output_file = open("test.csv", "w")
-    df.drop_duplicates()
-    df.to_csv(path_or_buf=output_file, index=False, sep="|")
+
+    output_file = open("test2.csv", "w")
+    final = pd.concat([test, df])
+    final.drop_duplicates(inplace=True)
+    final.sort_values(by=["date"], inplace=True)
+    final.to_csv("final_test.csv", sep="|", index=False)
     output_file.close()

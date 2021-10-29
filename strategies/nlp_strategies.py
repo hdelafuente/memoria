@@ -79,7 +79,7 @@ def base_strategy(
         ) = row
         if not open_trade:
             # Verificamos si hay señal de compra
-            if n_bullish > n_bearish and balance > 0:
+            if n_very_bullish + n_bullish > n_very_bearish + n_bearish and balance > 0:
                 # buy signal...
                 open_trade = True
                 current_trade = register_open_trade(
@@ -101,7 +101,7 @@ def base_strategy(
 
         else:
             # Con un trade abierto verificamos si hay señal de venta
-            if n_bearish > n_bullish:
+            if n_bearish + n_very_bearish > n_bullish + n_very_bullish:
                 # sell signal...
                 open_trade = False
 
@@ -161,6 +161,7 @@ def wighted_base_strategy(
 
     Consideraciones:
       * La estrategia compra al final del dia
+      * Noticias muy positivas y muy negativas tienen un peso de 1.5
 
 
     starting_balance: int > 0
