@@ -41,7 +41,7 @@ def macd_rsi_strategy(
         if open_trade:
             if (
                 row["macd"] < row["signal"]
-                and prev_row["macd"] > prev_row["signal"]
+                # and prev_row["macd"] > prev_row["signal"]
                 and row["macd"] > 0
                 and row["rsi"] >= 50
             ):
@@ -49,10 +49,13 @@ def macd_rsi_strategy(
                 current_trade["close_date"] = index
                 current_trade["close_rate"] = row["Close"]
                 balance += current_trade["amount"] * current_trade["close_rate"]
-                current_trade["profit"] = (
+                current_trade["profit_abs"] = (
                     current_trade["close_rate"] - current_trade["open_rate"]
                 ) * current_trade["amount"]
                 current_trade["sell_reason"] = "sell_signal"
+                current_trade["profit_ratio"] = (
+                    current_trade["close_rate"] / current_trade["open_rate"]
+                ) - 1
                 trades.append(current_trade)
                 open_trade = False
                 current_trade = dict()
@@ -61,17 +64,20 @@ def macd_rsi_strategy(
                 current_trade["close_date"] = index
                 current_trade["close_rate"] = row["Close"]
                 balance += current_trade["amount"] * current_trade["close_rate"]
-                current_trade["profit"] = (
+                current_trade["profit_abs"] = (
                     current_trade["close_rate"] - current_trade["open_rate"]
                 ) * current_trade["amount"]
                 current_trade["sell_reason"] = "stop_loss"
+                current_trade["profit_ratio"] = (
+                    current_trade["close_rate"] / current_trade["open_rate"]
+                ) - 1
                 trades.append(current_trade)
                 open_trade = False
                 current_trade = dict()
         else:
             if (
                 row["macd"] > row["signal"]
-                and prev_row["macd"] < prev_row["signal"]
+                # and prev_row["macd"] < prev_row["signal"]
                 and row["macd"] < 0
                 and row["rsi"] <= 50
             ):
@@ -96,7 +102,7 @@ def macd_rsi_strategy(
                 open_trade = True
         prev_row = row
     if open_trade:
-        logger.info("Unclosed trade detected! Handling...")
+        # logger.info("Unclosed trade detected! Handling...")
         last_trade = trades.pop()
         balance += last_trade["open_rate"] * last_trade["amount"]
     return trades, balance

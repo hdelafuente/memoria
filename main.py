@@ -1,14 +1,16 @@
 import warnings
+import pprint
 
 warnings.filterwarnings("ignore")
 import logging
 
 # Procesamiento
-from strategies.nlp_strategies import base_strategy, wighted_base_strategy
-from strategies.ta_strategies import macd_rsi_strategy
-from processing.backtest import get_backtest_results
-from processing.data import load_and_estimate, build_dataframe
-from processing.optimizing import optimize_macd_rsi_strategy
+from processing.backtest import get_backtest_results, print_results
+from data import load_and_estimate, build_dataframe
+from processing.optimizing import (
+    optimize_macd_rsi_strategy,
+    optimize_nlp_weighted_strategy,
+)
 
 # Visualizacion
 from visualization.utils import plot_results
@@ -40,47 +42,28 @@ if __name__ == "__main__":
     logger.info(f"Stop loss: {stop_loss*100:3.2f} %")
     logger.info("Starting backtests...")
 
-    base_strategy_trades, balance = base_strategy(
-        btc,
-        stake_amount=stake_amount,
+    optimal_weight, nlp_weight_trades, nlp_balance = optimize_nlp_weighted_strategy(
+        btc, stake_amount, starting_balance, stop_loss, plot=False
+    )
+
+    _, _, _, _, macd_trades, macd_balance = optimize_macd_rsi_strategy(
+        btc, stake_amount, starting_balance, stop_loss, plot=False
+    )
+    # TODO: implementar en processing.backtest salida de los trades
+    # TODO: implementar output de los trades: max profit, min profit, wins/loses/draws, avg profit, avg loss
+    # TODO: implementar opcion de mostrar rangos de fechas
+    # TODO: integrar de comparacion y rango de fechas
+
+    macd_results = get_backtest_results(
+        macd_trades, macd_balance, name="MACD + RSI", starting_balance=starting_balance
+    )
+
+    nlp_results = get_backtest_results(
+        nlp_weight_trades,
+        nlp_balance,
+        name="NLP with Weights",
         starting_balance=starting_balance,
-        stop_loss=stop_loss,
     )
-    base_weighted_strategy_trades, balance2 = wighted_base_strategy(
-        btc,
-        stake_amount=stake_amount,
-        starting_balance=starting_balance,
-        stop_loss=stop_loss,
-    )
-
-    fast_period, slowpreiod, signalperiod = optimize_macd_rsi_strategy(
-        btc, stake_amount, starting_balance, stop_loss
-    )
-    macd_rsi_strategy_trades, balance3 = macd_rsi_strategy(
-        btc,
-        stake_amount,
-        starting_balance,
-        stop_loss,
-        fast_period,
-        slowpreiod,
-        signalperiod,
-    )
-
-    print("==============================")
-    print("Base strategy result")
-    print(f"Final balance: $ {balance:3.2f}")
-    print(f"Total Profit: {(balance * 100 /starting_balance):3.2f} %")
-
-    print("==============================")
-    print("Base weighted strategy result")
-    print(f"Final balance: $ {balance2:3.2f}")
-    print(f"Total Profit: {(balance2 * 100 / starting_balance):3.2f} %")
-
-    print("==============================")
-    print("MACD + RSI (optimized) strategy result")
-    print(f"Final balance: $ {balance3:3.2f}")
-    print(f"Total Profit: {(balance3 * 100 / starting_balance):3.2f} %")
-    print("==============================")
-
-    if PLOT_NEWS:
-        plot_results(btc)
+    pprint.pprint(nlp_results, sort_dicts=False)
+    print("########################")
+    pprint.pprint(macd_results, sort_dicts=False)
