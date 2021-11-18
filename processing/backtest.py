@@ -29,6 +29,9 @@ def get_backtest_results(trades: dict, final_balance, name="", starting_balance=
 
     roi_history = dict()
 
+    cumulative_profit = 0
+    cumulative_profit_history = dict()
+
     sell_reasons = {"stop_loss": 0, "sell_signal": 0}
     logger.info(f"Processing {name} backtest results...")
     for trade in trades:
@@ -42,6 +45,9 @@ def get_backtest_results(trades: dict, final_balance, name="", starting_balance=
             (trade["close_rate"] * trade["amount"]) - trade["stake_amount"]
         ) / trade["stake_amount"]
         roi_history[trade["close_date"]] = roi0
+
+        cumulative_profit += trade["profit_abs"]
+        cumulative_profit_history[trade["close_date"]] = cumulative_profit
 
         if balance > max_balance:
             max_balance = balance
@@ -95,29 +101,30 @@ def get_backtest_results(trades: dict, final_balance, name="", starting_balance=
     win_ratio = wins / (wins + losses) * 100.0
 
     # max drawdown
-    max_drawdown = (max_balance - min_balance) / max_balance
+    max_drawdown = (min_balance - max_balance) / max_balance
 
     return {
-        "name": name,
-        "starting_balance": starting_balance,
-        "final_balance": final_balance,
-        "avg_profit": avg_profit,
-        "avg_loss": avg_loss,
-        "max_profit": max_profit,
-        "min_profit": min_profit,
-        "wins": wins,
-        "losses": losses,
-        "win_ratio": win_ratio,
-        "sell_reasons": sell_reasons,
-        "abs_profit": abs_profit,
-        "global_roi": roi,
-        "roi_history": roi_history,
-        "profit_factor": profit_factor,
-        "avg_hold_time": avg_hold_time,
-        "max_drawdown": max_drawdown,
-        "max_balance": max_balance,
-        "min_balance": min_balance,
-        "balance_history": balance_history,
+        "name": name,                                           # string
+        "starting_balance": starting_balance,                   # float
+        "final_balance": final_balance,                         # float
+        "avg_profit": avg_profit,                               # float
+        "avg_loss": avg_loss,                                   # float
+        "max_profit": max_profit,                               # float
+        "min_profit": min_profit,                               # float
+        "wins": wins,                                           # int
+        "losses": losses,                                       # int
+        "win_ratio": win_ratio,                                 # float
+        "sell_reasons": sell_reasons,                           # dict
+        "abs_profit": abs_profit,                               # float
+        "global_roi": roi,                                      # float
+        "roi_history": roi_history,                             # dict
+        "profit_factor": profit_factor,                         # float
+        "avg_hold_time": avg_hold_time,                         # float
+        "max_drawdown": max_drawdown,                           # float
+        "max_balance": max_balance,                             # float
+        "min_balance": min_balance,                             # float
+        "balance_history": balance_history,                     # dict
+        "cumulative_profit_history": cumulative_profit_history, # dict
     }
 
 

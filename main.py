@@ -13,7 +13,7 @@ from processing.optimizing import (
 )
 
 # Visualizacion
-from visualization.utils import plot_results
+from visualization.utils import *
 
 # Configuracion
 from decouple import config
@@ -64,6 +64,8 @@ if __name__ == "__main__":
         name="NLP with Weights",
         starting_balance=starting_balance,
     )
-    pprint.pprint(nlp_results, sort_dicts=False)
-    print("########################")
-    pprint.pprint(macd_results, sort_dicts=False)
+    
+    results = [macd_results, nlp_results]
+
+    plot_avg_profit_loss(results)
+    plot_win_ratio(results)

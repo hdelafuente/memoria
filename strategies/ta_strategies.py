@@ -86,7 +86,7 @@ def macd_rsi_strategy(
                 current_trade["open_rate"] = row["Close"]
                 open_trade = True
                 if balance < stake_amount:
-                    current_trade["stake_amount"] = balance
+                    current_trade["stake_amount"] = balance*0.7
                 else:
                     current_trade["stake_amount"] = stake_amount
 
