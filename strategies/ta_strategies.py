@@ -60,7 +60,7 @@ def macd_rsi_strategy(
                 open_trade = False
                 current_trade = dict()
             elif row["Close"] <= current_trade["stop_loss_abs"]:
-                # stopp loss: close the trade
+                # stop loss: close the trade
                 current_trade["close_date"] = index
                 current_trade["close_rate"] = row["Close"]
                 balance += current_trade["amount"] * current_trade["close_rate"]
@@ -86,7 +86,94 @@ def macd_rsi_strategy(
                 current_trade["open_rate"] = row["Close"]
                 open_trade = True
                 if balance < stake_amount:
-                    current_trade["stake_amount"] = balance*0.7
+                    current_trade["stake_amount"] = balance * 0.7
+                else:
+                    current_trade["stake_amount"] = stake_amount
+
+                current_trade["stop_loss_ratio"] = stop_loss
+                current_trade["stop_loss_abs"] = current_trade["open_rate"] * (
+                    1 - stop_loss
+                )
+
+                current_trade["amount"] = (
+                    current_trade["stake_amount"] / current_trade["open_rate"]
+                )
+                balance -= current_trade["stake_amount"]
+                open_trade = True
+        prev_row = row
+    if open_trade:
+        # logger.info("Unclosed trade detected! Handling...")
+        last_trade = trades.pop()
+        balance += last_trade["open_rate"] * last_trade["amount"]
+    return trades, balance
+
+
+def bb_rsi_strategy(
+    df: DataFrame,
+    stake_amount=7000.0,
+    starting_balance=10000.0,
+    stop_loss=0.05,
+    time_period=5,
+    nbdevup=2,
+    nbdevdn=2,
+    matype=0,
+    rsi_timeperiod=12,
+) -> dict():
+
+    df["upperband"], df["middleband"], df["lowerband"] = talib.BBANDS(
+        df["Close"],
+        timeperiod=time_period,
+        nbdevup=nbdevup,
+        nbdevdn=nbdevdn,
+        matype=matype,
+    )
+    df["rsi"] = talib.RSI(df["Close"], timeperiod=rsi_timeperiod)
+
+    trades = list()
+    open_trade = False
+    current_trade = dict()
+    balance = starting_balance
+    stake_amount = stake_amount
+    for index, row in df.iloc[34:].iterrows():
+        if open_trade:
+            if row["Close"] >= row["upperband"] and row["rsi"] >= 50:
+                # close the trade
+                current_trade["close_date"] = index
+                current_trade["close_rate"] = row["Close"]
+                current_trade["profit_abs"] = (
+                    current_trade["close_rate"] - current_trade["open_rate"]
+                ) * current_trade["amount"]
+                current_trade["sell_reason"] = "sell_signal"
+                current_trade["profit_ratio"] = (
+                    current_trade["close_rate"] / current_trade["open_rate"]
+                ) - 1
+                balance += current_trade["amount"] * current_trade["close_rate"]
+                trades.append(current_trade)
+                open_trade = False
+                current_trade = dict()
+            elif row["Close"] <= current_trade["stop_loss_abs"]:
+                # stop loss: close the trade
+                current_trade["close_date"] = index
+                current_trade["close_rate"] = row["Close"]
+                current_trade["profit_abs"] = (
+                    current_trade["close_rate"] - current_trade["open_rate"]
+                ) * current_trade["amount"]
+                current_trade["sell_reason"] = "stop_loss"
+                current_trade["profit_ratio"] = (
+                    current_trade["close_rate"] / current_trade["open_rate"]
+                ) - 1
+                balance += current_trade["amount"] * current_trade["close_rate"]
+                trades.append(current_trade)
+                open_trade = False
+                current_trade = dict()
+        else:
+            if row["Close"] <= row["middleband"] and row["rsi"] <= 50:
+                # open a trade
+                current_trade["open_date"] = index
+                current_trade["open_rate"] = row["Close"]
+                open_trade = True
+                if balance < stake_amount:
+                    current_trade["stake_amount"] = balance * 0.7
                 else:
                     current_trade["stake_amount"] = stake_amount
 

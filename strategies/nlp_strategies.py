@@ -15,7 +15,7 @@ def register_open_trade(
     # Vemos si usamos el total del balance o
     # el stake_amount
     if balance < stake_amount:
-        amount = balance*0.7 / open_rate
+        amount = balance * 0.7 / open_rate
         trade["stake_amount"] = balance
     else:
         trade["stake_amount"] = stake_amount

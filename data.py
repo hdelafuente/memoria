@@ -7,6 +7,7 @@ import os
 from tqdm import tqdm
 import pandas as pd
 from textblob import TextBlob
+from textblob.sentiments import NaiveBayesAnalyzer
 import pandas_datareader as pdr
 
 
@@ -30,6 +31,8 @@ def load_and_estimate(file_name: str) -> pd.DataFrame:
     )
     test = test.sort_values(by="date")
     test.set_index("date")
+
+    # bottleneck
     test["polarity"] = test.text.apply(estimate_polarity)
     return test
 
@@ -58,7 +61,6 @@ def group_news(test: pd.DataFrame) -> dict:
 
 
 def build_dataframe(test: pd.DataFrame, ticker: str) -> pd.DataFrame:
-    # Extraccion de data historica
     logger.info(f"Generating dataframe for: {ticker}")
     start_date = test.iloc[0].date
     end_date = test.iloc[-1].date

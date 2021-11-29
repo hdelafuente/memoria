@@ -2,7 +2,7 @@ import logging
 import pandas as pd
 import plotly.express as px
 
-from strategies.ta_strategies import macd_rsi_strategy
+from strategies.ta_strategies import macd_rsi_strategy, bb_rsi_strategy
 from strategies.nlp_strategies import wighted_base_strategy
 
 logger = logging.getLogger(__name__)
@@ -61,6 +61,64 @@ def optimize_macd_rsi_strategy(
         int(optimal_fastperiod),
         int(optimal_slowperiod),
         int(optimal_signalperiod),
+        int(optimal_rsiperiod),
+        trades[max_key],
+        results[max_key],
+    )
+
+
+def optimize_bb_rsi_strategy(df, stake_amount, starting_balance, stop_loss, plot=False):
+    """
+    Optimizacion de estrategia BB + RSI.
+    """
+    results = dict()
+    trades = dict()
+
+    logger.info("Optimizing BB + RSI strategy...")
+    # Probamos distintos valores para los parametros del MACD
+    # para buscar la configuracion optima
+    for time_period in [20, 22, 24, 26]:
+        for std_up in [2, 3, 4, 5]:
+            for std_down in [2, 3, 4, 5]:
+                for rsi_period in [6, 7, 8, 9]:
+                    iteration_trades, balance = bb_rsi_strategy(
+                        df,
+                        stake_amount=stake_amount,
+                        starting_balance=starting_balance,
+                        stop_loss=stop_loss,
+                        time_period=time_period,
+                        nbdevup=std_up,
+                        nbdevdn=std_down,
+                        matype=0,
+                        rsi_timeperiod=rsi_period,
+                    )
+            key = f"{time_period}_{std_up}_{std_down}_{rsi_period}"
+            results[key] = balance
+            trades[key] = iteration_trades
+
+    df = pd.DataFrame({"config": results.keys(), "balance": results.values()})
+    max_value = 0
+    max_key = ""
+
+    for index, row in df.iterrows():
+        if row["balance"] > max_value:
+            max_value = row["balance"]
+            max_key = row["config"]
+
+    if plot:
+        fig = px.histogram(df, x="config", y="balance")
+        fig.show()
+
+    (
+        optimal_time_period,
+        optimal_std_up,
+        optimal_std_down,
+        optimal_rsiperiod,
+    ) = max_key.split("_")
+    return (
+        int(optimal_time_period),
+        int(optimal_std_up),
+        int(optimal_std_down),
         int(optimal_rsiperiod),
         trades[max_key],
         results[max_key],

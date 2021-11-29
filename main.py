@@ -5,11 +5,13 @@ warnings.filterwarnings("ignore")
 import logging
 
 # Procesamiento
-from processing.backtest import get_backtest_results, print_results
+from strategies.nlp_strategies import wighted_base_strategy
+from processing.backtest import get_backtest_results
 from data import load_and_estimate, build_dataframe
 from processing.optimizing import (
     optimize_macd_rsi_strategy,
     optimize_nlp_weighted_strategy,
+    optimize_bb_rsi_strategy,
 )
 
 # Visualizacion
@@ -46,16 +48,37 @@ if __name__ == "__main__":
         btc, stake_amount, starting_balance, stop_loss, plot=False
     )
 
+    base_nlp_trades, base_nlp_balance = wighted_base_strategy(
+        btc,
+        stake_amount=stake_amount,
+        starting_balance=starting_balance,
+        stop_loss=stop_loss,
+        weight=1.0,
+    )
+
     _, _, _, _, macd_trades, macd_balance = optimize_macd_rsi_strategy(
         btc, stake_amount, starting_balance, stop_loss, plot=False
     )
-    # TODO: implementar en processing.backtest salida de los trades
-    # TODO: implementar output de los trades: max profit, min profit, wins/loses/draws, avg profit, avg loss
+    _, _, _, _, bb_trades, bb_balance = optimize_bb_rsi_strategy(
+        btc, stake_amount, starting_balance, stop_loss, plot=False
+    )
+
     # TODO: implementar opcion de mostrar rangos de fechas
     # TODO: integrar de comparacion y rango de fechas
 
+    bb_results = get_backtest_results(
+        bb_trades, bb_balance, name="BB + RSI", starting_balance=starting_balance
+    )
+
     macd_results = get_backtest_results(
         macd_trades, macd_balance, name="MACD + RSI", starting_balance=starting_balance
+    )
+
+    base_nlp_results = get_backtest_results(
+        base_nlp_trades,
+        base_nlp_balance,
+        name="NLP without Weights",
+        starting_balance=starting_balance,
     )
 
     nlp_results = get_backtest_results(
@@ -64,8 +87,22 @@ if __name__ == "__main__":
         name="NLP with Weights",
         starting_balance=starting_balance,
     )
-    
-    results = [macd_results, nlp_results]
 
-    plot_avg_profit_loss(results)
-    plot_win_ratio(results)
+    results = [base_nlp_results, nlp_results, macd_results, bb_results]
+
+    for i in results:
+        print("=====================================")
+        print(i["name"])
+        print(f"Max profit: {i['max_profit']:3.2f}%")
+        print(f"Min profit: {i['min_profit']:3.2f}%")
+        print(f"Wins: {i['wins']}")
+        print(f"Loses: {i['losses']}")
+        print(f"Avg. profit: {i['avg_profit']}")
+        print(f"Avg. loss: {i['avg_loss']}")
+        print(f"ROI: {i['global_roi']}")
+        print(f"max_drawdown: {i['max_drawdown']}")
+        print(f"starting_balance: ${i['starting_balance']}")
+        print(f"final_balance:    ${i['final_balance']}")
+        print(f"avg_hold_time: {i['avg_hold_time']:3.2f} days")
+    # plot_avg_profit_loss(results)
+    # plot_win_ratio(results)
